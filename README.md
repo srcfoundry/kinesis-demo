@@ -6,6 +6,8 @@
 ## kinesis-app1
 
 Kinesis-app1 is an example to showcase the flexibility of dynamically adding and shutting down components within an application, in addition to its endpoints. 
+<br>
+
 The example shows that the http endpoint (/kinesis-app1/comp1) for "comp1" component getting dynamically added and GET query on the same returning details about comp1. 
 Similarly, when "comp1" is shutdown after a few seconds, the http routes to it get removed and a GET on the endpoint yields "{"status":"not found"}"
 
