@@ -18,6 +18,6 @@ Similarly, when "comp1" is shutdown after a few seconds, the http routes to it g
 <br>
 
 #### Running
-- run ```while sleep 2; do curl http://127.0.0.1:8080/kinesis-app1/comp1; echo -e '\n'; done``` to repeatedly query "kinesis-app1/comp1" endpoint.
-- on another console run ```go run cmd/kinesis-app1/kinesis-app1.go <shutdown-delay>```, whereby "comp1" component would be shutdown after <b>"shutdown-delay"</b> seconds have elapsed.
+- execute ```while sleep 2; do curl http://127.0.0.1:8080/kinesis-app1/comp1; echo -e '\n'; done``` to repeatedly query "kinesis-app1/comp1" endpoint.
+- on another console execute ```go run cmd/kinesis-app1/kinesis-app1.go <shutdown-delay>```, whereby "comp1" component would be shutdown after <b>"shutdown-delay"</b> seconds have elapsed.
   
