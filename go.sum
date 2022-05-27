@@ -6,3 +6,5 @@ github.com/mitchellh/hashstructure/v2 v2.0.2 h1:vGKWl0YJqUNxE8d+h8f6NJLcCJrgbhC4
 github.com/mitchellh/hashstructure/v2 v2.0.2/go.mod h1:MG3aRVU/N29oo/V/IhBX8GR/zz4kQkprJgF2EVszyDE=
 github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 h1:RWengNIwukTxcDr9M+97sNutRR1RKhG96O6jWumTTnw=
 github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826/go.mod h1:TaXosZuwdSHYgviHp1DAtfrULt5eUgsSMsZf+YrPgl8=
+github.com/srcfoundry/kinesis v0.0.12 h1:TQKoD8AlysAD8+xMQ+l1ohFPG1oHyPr6BP2DmUv+fIw=
+github.com/srcfoundry/kinesis v0.0.12/go.mod h1:DgIorWxeJOtVyTglS1SDbpxpQ60Hc9Z1Iu6LN45s/4c=

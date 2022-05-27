@@ -15,8 +15,10 @@ type Value interface{}
 
 type Bucket struct {
 	component.SimpleComponent
-	Created string           `json:"created"`
-	KVMap   map[string]Value `json:"-"`
+	Created string `json:"created"`
+	// even though KVMAp is an exported field, it is excluded from showing up (`json:"-"` ensures its ignored) for GET on the bucket URI. The reason for exporting
+	// is to include it in calculating hash of the bucket and setting its ETag.
+	KVMap map[string]Value `json:"-"`
 }
 
 func (b *Bucket) ServeHTTP(w http.ResponseWriter, r *http.Request) {

@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/srcfoundry/kinesis"
@@ -54,11 +53,11 @@ func main() {
 
 	app.Subscribe("main.subscriber", subscribe)
 
-	// pass ctrl-c after 5 seconds after comp1 has shutdown
-	go func() {
-		time.Sleep(time.Second * time.Duration(sleepTime+5))
-		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-	}()
+	// raise interrupt 5 seconds after comp1 has shutdown
+	// go func() {
+	// 	time.Sleep(time.Second * time.Duration(sleepTime+5))
+	// 	syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+	// }()
 
 	for notification := range subscribe {
 		if notification == component.Stopped {

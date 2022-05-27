@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/gorilla/mux v1.8.0
-	github.com/srcfoundry/kinesis v0.0.11
+	github.com/srcfoundry/kinesis v0.0.12
 )
 
 require (
@@ -13,4 +13,5 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 )
 
-replace github.com/srcfoundry/kinesis => ../kinesis
+// for quick testing
+//replace github.com/srcfoundry/kinesis => ../kinesis
