@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/srcfoundry/kinesis"
@@ -15,18 +17,22 @@ import (
 func main() {
 	app := new(kinesis.App)
 	app.Name = "kinesis-app1"
+	app.RWMutex = &sync.RWMutex{}
 	app.Add(app)
 
 	httpServer := new(common.HttpServer)
 	httpServer.Name = "httpserver"
+	httpServer.RWMutex = &sync.RWMutex{}
 	app.Add(httpServer)
 
 	comp1 := new(component.SimpleComponent)
 	comp1.Name = "comp1"
+	comp1.RWMutex = &sync.RWMutex{}
 	app.Add(comp1)
 
+	var sleepTime int
+
 	go func() {
-		var sleepTime int
 		// check if delay is passed as argument
 		if len(os.Args) == 2 {
 			sleepTime, _ = strconv.Atoi(os.Args[1])
@@ -47,6 +53,12 @@ func main() {
 	defer close(subscribe)
 
 	app.Subscribe("main.subscriber", subscribe)
+
+	// pass ctrl-c after 5 seconds after comp1 has shutdown
+	go func() {
+		time.Sleep(time.Second * time.Duration(sleepTime+5))
+		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+	}()
 
 	for notification := range subscribe {
 		if notification == component.Stopped {

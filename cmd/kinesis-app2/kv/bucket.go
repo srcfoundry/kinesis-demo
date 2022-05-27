@@ -1,6 +1,8 @@
 package kv
 
 import (
+	"context"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,8 +15,8 @@ type Value interface{}
 
 type Bucket struct {
 	component.SimpleComponent
-	Created string `json:"created"`
-	kvMap   map[string]Value
+	Created string           `json:"created"`
+	KVMap   map[string]Value `json:"-"`
 }
 
 func (b *Bucket) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -32,50 +34,142 @@ func (b *Bucket) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		key := match.Vars["key"]
-		var found bool
 
 		// if key already found in bucket then return
-		if _, found = b.kvMap[key]; found {
+		if _, found := b.KVMap[key]; found {
 			http.Error(w, "cannot add duplicate key: "+key, http.StatusConflict)
 			return
 		}
 
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Println("obtained error while reading POST body", err)
+			log.Println("obtained error while reading http body", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		defer r.Body.Close()
 
-		b.kvMap[key] = body
+		b.KVMap[key] = body
+		log.Println("successfully added", key, "within", b.GetName())
+
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte(`{"status":"added"}"`))
+
+	case http.MethodPut:
+		key := match.Vars["key"]
+
+		// if key already found in bucket then check if ETag matches the bucket Etag
+		if _, found := b.KVMap[key]; found {
+			etags := []string{}
+			if moreEtags, found := r.Header[http.CanonicalHeaderKey("ETag")]; found {
+				etags = append(etags, moreEtags...)
+			}
+			if moreEtags, found := r.Header[http.CanonicalHeaderKey("etag")]; found {
+				etags = append(etags, moreEtags...)
+			}
+
+			if len(etags) <= 0 {
+				http.Error(w, "missing ETag header", http.StatusBadRequest)
+				return
+			}
+
+			// just iterate to check if any of etag values match since doing binary slice search could be overkill
+			foundEtag := false
+			for _, etag := range etags {
+				if etag == b.GetEtag() {
+					foundEtag = true
+					break
+				}
+			}
+
+			if !foundEtag {
+				http.Error(w, "cannot update due to mismatched ETag", http.StatusConflict)
+				return
+			}
+		}
+
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Println("obtained error while reading http body", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		defer r.Body.Close()
+
+		b.KVMap[key] = body
+		log.Println("successfully updated", key, "within", b.GetName())
+
+		// SetComponentEtag for bucket
+		component.SetComponentEtag(b)
+
+		w.Header().Set("ETag", b.GetEtag())
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(`{"status":"updated"}"`))
+		return
+
 	case http.MethodGet:
-		// get component copy for obtaining etag
-		bCopy, _ := component.GetComponentCopy(b)
+		// SetComponentEtag for bucket
+		component.SetComponentEtag(b)
 
 		// if URI does not contain any key path variable, then return marshalled bucket component
 		if !isKeyPathMatched {
-			component.MarshallToHttpResponseWriter(w, bCopy)
+			component.MarshallToHttpResponseWriter(w, b)
 			return
 		}
 
 		key := match.Vars["key"]
-		var (
-			found bool
-			value interface{}
-		)
+		value, found := b.KVMap[key]
 
 		// if key not found in bucket then return
-		if value, found = b.kvMap[key]; !found {
+		if !found {
 			http.Error(w, "cannot find value for key: "+key, http.StatusNotFound)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("ETag", bCopy.GetEtag())
+		w.Header().Set("ETag", b.GetEtag())
 		w.Write(value.([]byte))
+
+	case http.MethodDelete:
+		// if URI does not contain any key path variable, then return
+		if !isKeyPathMatched {
+			http.Error(w, "cannot find URI", http.StatusNotFound)
+			return
+		}
+
+		key := match.Vars["key"]
+		_, found := b.KVMap[key]
+
+		// if key not found in bucket then return
+		if !found {
+			http.Error(w, "cannot find value for key: "+key, http.StatusNotFound)
+			return
+		}
+
+		delete(b.KVMap, key)
+		log.Println("successfully deleted", key, "within", b.GetName())
+
+		// SetComponentEtag for bucket
+		component.SetComponentEtag(b)
+
+		if len(b.KVMap) <= 0 {
+			log.Println("no more keys within", b.GetName(), "... proceeding to shutdown")
+			errCh := make(chan error)
+			b.Notify(func() (context.Context, interface{}, chan<- error) {
+				return context.TODO(), component.Shutdown, errCh
+			})
+			err := <-errCh
+			if err != nil {
+				log.Println(fmt.Sprintf("obtained error %s while shutting down %v", err, b.GetName()))
+			}
+		} else {
+			w.Header().Set("ETag", b.GetEtag())
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"deleted"}"`))
+		return
+
 	default:
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 	}

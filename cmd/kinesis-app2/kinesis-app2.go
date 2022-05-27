@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"sync"
 
 	"github.com/srcfoundry/kinesis-demo/cmd/kinesis-app2/kv"
 	"github.com/srcfoundry/kinesis/common"
@@ -12,10 +13,12 @@ import (
 func main() {
 	app := new(kv.KV)
 	app.Name = "kv"
+	app.RWMutex = &sync.RWMutex{}
 	app.Add(app)
 
 	httpServer := new(common.HttpServer)
 	httpServer.Name = "httpserver"
+	httpServer.RWMutex = &sync.RWMutex{}
 	app.Add(httpServer)
 
 	subscribe := make(chan interface{}, 1)
