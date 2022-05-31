@@ -14,4 +14,4 @@ require (
 )
 
 // for quick testing
-//replace github.com/srcfoundry/kinesis => ../kinesis
+replace github.com/srcfoundry/kinesis => ../kinesis

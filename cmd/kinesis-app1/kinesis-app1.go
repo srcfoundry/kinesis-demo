@@ -17,17 +17,29 @@ func main() {
 	app := new(kinesis.App)
 	app.Name = "kinesis-app1"
 	app.RWMutex = &sync.RWMutex{}
-	app.Add(app)
+	err := app.Add(app)
+	if err != nil {
+		log.Printf("failed to start %s, due to %s", app.GetName(), err)
+		os.Exit(1)
+	}
 
 	httpServer := new(common.HttpServer)
 	httpServer.Name = "httpserver"
 	httpServer.RWMutex = &sync.RWMutex{}
-	app.Add(httpServer)
+	err = app.Add(httpServer)
+	if err != nil {
+		log.Printf("failed to start %s, due to %s", httpServer.GetName(), err)
+		os.Exit(1)
+	}
 
 	comp1 := new(component.SimpleComponent)
 	comp1.Name = "comp1"
 	comp1.RWMutex = &sync.RWMutex{}
-	app.Add(comp1)
+	err = app.Add(comp1)
+	if err != nil {
+		log.Printf("failed to start %s, due to %s", comp1.GetName(), err)
+		os.Exit(1)
+	}
 
 	var sleepTime int
 
