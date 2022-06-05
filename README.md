@@ -58,4 +58,10 @@ The KV tuples could be referenced using URI hierarchy ```"/kv/{bucket:[a-zA-Z0-9
 
 Using POST, leads to the creation of new KV tuples and the underlying bucket if it does not exist. PUT method calls may be used to update an existing KV tuple and would be treated as a POST call, if one does'nt exist.
 
-Initially when the app has started all KV tuple POST/PUT calls are handled by the http handler within "kv" component, available at "/kv" URI endpoint. Every KV POST/PUT calls containing a new bucket name, would result in a new bucket component getting initialized, by the "/kv" endopint handler. Thereafter all subsequent REST calls which contains the bucket name within the URI path, would be redirected to the appropriate bucket's http handler.
+Initially when the app starts, all KV tuple POST/PUT calls are handled by the http handler within "kv" component, available at "/kv" URI endpoint. Every KV POST/PUT call containing a new bucket name, would result in a new bucket component getting initialized, by the "/kv" endopint handler. Thereafter all subsequent REST calls which contains the bucket name within the URI path, would be redirected to the appropriate bucket's http handler.
+
+<br>
+
+![](images/kinesis-app2-demo-create-bucket.gif)
+
+<br>
