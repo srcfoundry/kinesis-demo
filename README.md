@@ -79,6 +79,9 @@ As shown in the above screencast, a new bucket "themes" got created while trying
 
 In order to address inconsistencies arising due to concurrent modification, any addition, editing or deletion of any KV tuples within a bucket would result in recalculating the hash of the bucket component and getting assigned a new ETag each time. The POST requests shown in the screencast, returns back with the "themes" bucket ETag as a header response. Notice difference in ETag for each of the POST requests being made to add a new KV tuple.
 
+<br>
+<br>
+
 Any KV tuple updates using PUT requests, without proper ETag would result in rejecting the updates.
 
 <br>
@@ -88,6 +91,9 @@ Any KV tuple updates using PUT requests, without proper ETag would result in rej
 <br>
 
 The above screencast shows, the first update to "user045" getting rejected due to "mismatched ETag" and the subsequent update with proper ETag, being successful.
+
+<br>
+<br>
 
 Once all the keys in a bucket are deleted, the bucket component would get stopped and teared down, as shown in the screencast below.
 
