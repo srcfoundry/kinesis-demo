@@ -1,5 +1,7 @@
 # kinesis-demo
- example apps showcasing various capabilities provided by [kinesis](https://github.com/srcfoundry/kinesis)
+    example apps showcasing various capabilities provided by [kinesis](https://github.com/srcfoundry/kinesis)
+
+
 
 <br>
 
@@ -14,6 +16,11 @@ Similarly, when "comp1" is shutdown after a few seconds, the http routes to it g
 <br>
 
 ![](images/kinesis-app1-demo.gif)
+<i>##### split screen screencast recording using asciinema ##### Refer [link1] and [link2]</i> 
+
+[link1]:https://dev.to/noandrea/terminal-split-screen-recording-with-asciinema-screen-3b7i
+
+[link2]:https://techsparx.com/blog/2019/08/terminal-recording.html
 
 <br>
 
@@ -58,10 +65,34 @@ The KV tuples could be referenced using URI hierarchy ```"/kv/{bucket:[a-zA-Z0-9
 
 Using POST, leads to the creation of new KV tuples and the underlying bucket if it does not exist. PUT method calls may be used to update an existing KV tuple and would be treated as a POST call, if one does'nt exist.
 
-Initially when the app starts, all KV tuple POST/PUT calls are handled by the http handler within "kv" component, available at "/kv" URI endpoint. Every KV POST/PUT call containing a new bucket name, would result in a new bucket component getting initialized, by the "/kv" endopint handler. Thereafter all subsequent REST calls which contains the bucket name within the URI path, would be redirected to the appropriate bucket's http handler.
+Initially when the app starts, all KV tuple POST/PUT calls are handled by the http handler within "kv" component, available at "/kv" URI endpoint. 
+
+Every KV POST/PUT call containing a new bucket name, would result in a new bucket component getting initialized, by the "/kv" endopint handler. Thereafter all subsequent REST calls which contains the bucket name within the URI path, would be redirected to the appropriate bucket's http handler.
 
 <br>
 
 ![](images/kinesis-app2-demo-create-bucket.gif)
+
+<br>
+
+As shown in the above screencast, a new bucket "themes" got created while trying to add a new KV tuple for "user045", through the POST request. The POST request is handled by the "kv" container http handler which then proceeds to initialize the "themes" bucket as a component within it. Subsequent http requests to add/edit/delete/get KV tuples under "themes" are handled by the "themes" component http handler.
+
+In order to address inconsistencies arising due to concurrent modification, any addition, editing or deletion of any KV tuples within a bucket would result in recalculating the hash of the bucket component and getting assigned a new ETag each time. The POST requests shown in the screencast, returns back with the "themes" bucket ETag as a header response. Notice difference in ETag for each of the POST requests being made to add a new KV tuple.
+
+Any KV tuple updates using PUT requests, without proper ETag would result in rejecting the updates.
+
+<br>
+
+![](images/kinesis-app2-demo-update-bucket.gif)
+
+<br>
+
+The above screencast shows, the first update to "user045" getting rejected due to "mismatched ETag" and the subsequent update with proper ETag, being successful.
+
+Once all the keys in a bucket are deleted, the bucket component would get stopped and teared down, as shown in the screencast below.
+
+<br>
+
+![](images/kinesis-app2-demo-delete-bucket.gif)
 
 <br>

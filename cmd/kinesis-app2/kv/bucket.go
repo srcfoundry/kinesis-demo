@@ -54,6 +54,10 @@ func (b *Bucket) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		b.KVMap[key] = body
 		log.Println("successfully added", key, "within", b.GetName())
 
+		// SetComponentEtag for bucket
+		component.SetComponentEtag(b)
+		w.Header().Set("ETag", b.GetEtag())
+
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte(`{"status":"added"}"`))
 
