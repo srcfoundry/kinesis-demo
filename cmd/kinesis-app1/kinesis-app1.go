@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"os"
 	"strconv"
@@ -53,11 +52,7 @@ func main() {
 		}
 		time.Sleep(time.Second * time.Duration(sleepTime))
 		log.Println("sending", component.Shutdown, "signal to", comp1.GetName())
-		errCh := make(chan error)
-		comp1.Notify(func() (context.Context, interface{}, chan<- error) {
-			return context.TODO(), component.Shutdown, errCh
-		})
-		<-errCh
+		comp1.Notify(5*time.Second, component.ControlMsgId, map[component.MsgClassifierId]interface{}{component.ControlMsgId: component.Shutdown}, nil)
 	}()
 
 	subscribe := make(chan interface{}, 1)

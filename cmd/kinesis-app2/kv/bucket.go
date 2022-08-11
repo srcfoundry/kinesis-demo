@@ -1,11 +1,10 @@
 package kv
 
 import (
-	"context"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/srcfoundry/kinesis/component"
@@ -160,13 +159,9 @@ func (b *Bucket) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		if len(b.KVMap) <= 0 {
 			log.Println("no more keys within", b.GetName(), "... proceeding to shutdown")
-			errCh := make(chan error)
-			b.Notify(func() (context.Context, interface{}, chan<- error) {
-				return context.TODO(), component.Shutdown, errCh
-			})
-			err := <-errCh
+			err := b.Notify(5*time.Second, component.ControlMsgId, map[component.MsgClassifierId]interface{}{component.ControlMsgId: component.Shutdown}, nil)
 			if err != nil {
-				log.Println(fmt.Sprintf("obtained error %s while shutting down %v", err, b.GetName()))
+				log.Printf("obtained error %s while shutting down %v", err, b.GetName())
 			}
 		} else {
 			w.Header().Set("ETag", b.GetEtag())
